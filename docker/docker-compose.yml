@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mlops:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ../:/app
+    working_dir: /app
+    ports:
+      - "5000:5000"  # MLflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlops:5000
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - bridge
+
+  bridge:
+    build:
+      context: ../bridge
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mlops
+
+volumes:
+  grafana-storage:
+
