@@ -1,0 +1,15 @@
+# python==3.10
+pandas
+scikit-learn
+xgboost
+catboost
+lightgbm
+mlflow
+evidently
+joblib
+flask
+requests
+matplotlib
+seaborn
+prefect
+
