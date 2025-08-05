@@ -29,6 +29,9 @@ services:
     restart: unless-stopped
 
   metrics-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     image: mlops-diabetes
     container_name: metrics-api
     depends_on:
@@ -42,12 +45,12 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     restart: unless-stopped
 
-  prefect-server:
-    image: prefecthq/prefect:2-latest
-    container_name: prefect-server
+  prefect-ui:
+    image: prefecthq/prefect:2.10-python3.9
+    container_name: prefect-ui
     ports:
-      - "4200:4200"  # Prefect UI
-    command: prefect orion start
+      - "4200:4200"
+    command: prefect ui --host 0.0.0.0 --port 4200
     restart: unless-stopped
 
 
@@ -55,11 +58,13 @@ services:
     image: mlops-diabetes
     container_name: prefect-agent
     depends_on:
-      - prefect-server
+      - prefect-ui
       - mlflow
     volumes:
       - ./:/app
+    working_dir: /app
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     command: python flow.py
     restart: unless-stopped
+

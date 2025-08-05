@@ -1,3 +1,5 @@
+# docker/Dockerfile
+
 FROM python:3.9-slim
 
 # Install system dependencies
@@ -6,18 +8,20 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set workdir
+# Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app files
+# Copy all source code
 COPY . .
 
-# Expose ports for Jupyter and MLflow UI
-EXPOSE 8888 5000
+# Expose the port your Flask app uses
+EXPOSE 8000
 
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--allow-root", "--no-browser"]
+# Default command to run the Flask metrics API
+CMD ["python", "src/bridge/metrics_api.py"]
 

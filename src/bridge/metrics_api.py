@@ -21,7 +21,12 @@ def get_metrics():
     metrics = {
         "accuracy": run.data.metrics.get("accuracy"),
         "roc_auc": run.data.metrics.get("roc_auc"),
+        "precision": run.data.metrics.get("precision"),
+        "recall": run.data.metrics.get("recall"),
+        "run_id": run.info.run_id,
+        "start_time": run.info.start_time,
         # Add more metrics as needed (e.g., drift)
+        # "drift_score": run.data.metrics.get("drift_score"),  # if logged
     }
     return jsonify(metrics)
 
