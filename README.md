@@ -77,7 +77,8 @@ This dataset is anonymized and public, but real patient data requires strict pri
 - **Visualization**: Grafana dashboard linked to SQLite MLflow backend.
 - **Orchestration**: Prefect (local and cloud) for running and scheduling flows.
 - **Containers**: Dockerized environment with `docker-compose` support.
-- **Extensible**: CI/CD, pre-commit hooks, unit/integration tests, and IaC to be added.
+- **Tests Included*: Unit/integration tests
+- **Extensible**: CI/CD, pre-commit hooks, and IaC to be added.
 
 ---
 
@@ -104,6 +105,8 @@ This dataset is anonymized and public, but real patient data requires strict pri
 ├── mlruns/           # MLflow artifacts
 ├── docker-compose.yml
 ├── requirements.txt
+├── test_training.py
+├── test_pipeline.py
 └── README.md
 ```
 
@@ -179,9 +182,8 @@ docker-compose exec metrics-api python src/orchestration/evidently_flow.py
 ## 📦 Planned Enhancements
 
 - [ ] CI/CD with GitHub Actions
-- [ ] Unit & integration tests
 - [ ] Pre-commit hooks for formatting and linting
-- [ ] Infrastructure as Code (Terraform / Pulumi)
+- [ ] Infrastructure as Code (Terraform)
 - [ ] Deployment to AWS/GCP via LocalStack or cloud-native services
 
 ---
