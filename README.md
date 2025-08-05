@@ -1,4 +1,10 @@
-## Project Overview: ML Analysis of the Pima Indian Diabetes Dataset
+# 🩺 Pima Diabetes MLOps Pipeline
+
+This repository implements a complete MLOps pipeline for analyzing the Pima Indian Diabetes dataset, using modern tools for experimentation, monitoring, orchestration, and visualization.
+
+---
+
+## 📊 Problem Statement
 
 This project focuses on applying machine learning techniques to the Pima Indian Diabetes dataset, a well-known dataset from the UCI repository. The dataset contains medical diagnostic measurements of female patients of Pima Indian heritage, aged 21 and older, with the goal of predicting the onset of diabetes.
 
@@ -60,120 +66,126 @@ While complex models like LightGBM or MLP may perform well, simpler models (e.g.
 This dataset is anonymized and public, but real patient data requires strict privacy and compliance with regulations like HIPAA or GDPR.
 
 
-# MLOps Diabetes Pipeline
+---
 
-This repository contains a complete MLOps pipeline for the Pima Indian Diabetes dataset, featuring:
+## 🚀 Features
 
-- Training multiple models (LightGBM, Logistic Regression, Random Forest, SVM, MLP, etc.)
-- Logging experiments and metrics to MLflow (with SQLite backend)
-- Monitoring metrics via Grafana connected to MLflow's SQLite DB
-- Prefect orchestration for workflow automation, scheduling, and monitoring
+- **Data Versioning & Tracking**: MLflow to track experiments, metrics, models, and artifacts.
+- **Model Training**: Multiple models (Logistic Regression, Random Forest, SVM, MLP, XGBoost, LightGBM, CatBoost).
+- **Best Model Selection**: Automatically selects and registers best-performing model.
+- **Model Monitoring**: Evidently integrated for drift and performance monitoring.
+- **Visualization**: Grafana dashboard linked to SQLite MLflow backend.
+- **Orchestration**: Prefect (local and cloud) for running and scheduling flows.
+- **Containers**: Dockerized environment with `docker-compose` support.
+- **Extensible**: CI/CD, pre-commit hooks, unit/integration tests, and IaC to be added.
 
 ---
 
-## Prerequisites
+## 🧱 Project Structure
 
-- Docker & Docker Compose installed
-- Basic familiarity with Docker and MLflow
-
----
-
-## Setup
-
-### 1. Clone repository
-
-```bash
-git clone <repo-url>
-cd <repo-folder>
+```
+.
+├── docker/
+│   └── grafana/
+│       ├── dashboards/
+│       │   └── mlflow_dashboard.json
+│       └── provisioning/
+│           └── dashboards/mlflow.yaml
+├── src/
+│   ├── bridge/
+│   │   └── metrics_api.py
+│   ├── monitoring/
+│   │   └── monitor.py
+│   ├── training/
+│   │   └── train_and_log.py
+│   └── orchestration/
+│       └── evidently_flow.py
+├── mlflow/           # SQLite DB file mount
+├── mlruns/           # MLflow artifacts
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
 ```
 
-### 2. Docker images and dependencies
-
-- The Dockerfile installs required Python packages including Prefect and MLflow.
-- Prefect, MLflow, and Grafana are run as separate services in Docker Compose.
-
-### 3. Docker Compose services
-
-- **mlflow**: MLflow server UI, tracking SQLite database
-- **grafana**: Grafana UI for visualizing MLflow metrics
-- **metrics-api**: Custom metrics API container
-- **prefect-server**: Prefect Orion server & UI for orchestration
-- **prefect-agent**: Runs Prefect flows (e.g., training pipeline)
-
 ---
 
-## Running the Pipeline
+## 🐳 Usage
 
-### Build Docker images
+### 1. Build and Run
 
 ```bash
-docker-compose build mlops-diabetes
+docker-compose up -d --build
 ```
 
-### Start all services
+### 2. Train Models
 
 ```bash
-docker-compose up -d prefect-server mlflow grafana prefect-agent metrics-api
+docker-compose exec metrics-api python src/training/train_and_log.py
 ```
 
-### Access UIs
-
-- MLflow UI: [http://localhost:5000](http://localhost:5000)
-- Grafana UI: [http://localhost:3000](http://localhost:3000)
-- Prefect UI: [http://localhost:4200](http://localhost:4200)
-
----
-
-## Prefect Flow
-
-- The Prefect flow is defined in `flow.py`, which runs `train_and_log.py` inside a Prefect task.
-- The `prefect-agent` service executes this flow inside Docker.
-- Use the Prefect UI to monitor flow runs, logs, and schedule future runs.
-
----
-
-## Dashboard Setup
-
-- Grafana dashboards are auto-provisioned from `./docker/grafana/dashboards/`
-- Provisioning configs are in `./docker/grafana/provisioning/dashboards/`
-- Dashboards visualize MLflow metrics stored in SQLite.
-
----
-
-## Logs & Debugging
-
-- To view logs for services:
+### 3. Monitor Metrics API
 
 ```bash
-docker-compose logs -f mlflow
-docker-compose logs -f grafana
-docker-compose logs -f prefect-server
-docker-compose logs -f prefect-agent
+curl http://localhost:8000/metrics
 ```
 
-- For manual dashboard import or troubleshooting, use the Grafana UI.
+### 4. Generate Monitoring Report
+
+```bash
+docker-compose exec metrics-api python src/monitoring/monitor.py
+```
+
+### 5. Run Prefect Flow (Locally)
+
+```bash
+docker-compose exec metrics-api python src/orchestration/evidently_flow.py
+```
 
 ---
 
-## Extending the Pipeline
+## ☁️ Prefect Cloud Setup
 
-- Add additional Prefect tasks for model selection, tuning, alerting, etc.
-- Integrate notifications for failed runs via Prefect.
-- Expand Grafana dashboards with more MLflow metrics and parameters.
-- Add CI/CD and infrastructure-as-code as next steps.
+1. Log in:
+   ```bash
+   prefect cloud login
+   ```
+
+2. Set workspace:
+   ```bash
+   prefect cloud workspace set --account <ACCOUNT_ID> --workspace <WORKSPACE_ID>
+   ```
+
+3. Deploy:
+   ```bash
+   prefect deployment build src/orchestration/evidently_flow.py:monitoring_flow --name "Evidently Monitoring" --work-queue default
+   prefect deployment apply monitoring_flow-deployment.yaml
+   ```
+
+4. Start agent:
+   ```bash
+   prefect agent start --pool default-agent-pool --work-queue default
+   ```
 
 ---
 
-## Troubleshooting
+## 📈 Grafana Setup
 
-- If dashboards don't load, verify JSON dashboard files and provisioning YAML paths.
-- Confirm Prefect and MLflow services are running and accessible.
-- Rebuild Docker images after dependency or code changes.
-- Check container logs for errors.
+1. Visit [http://localhost:3000](http://localhost:3000) (default credentials: admin / admin).
+2. Add `frser-sqlite-datasource` plugin.
+3. Import the dashboard: `mlflow_dashboard.json`.
 
 ---
 
-## License
+## 📦 Planned Enhancements
 
-[MIT License](LICENSE)
+- [ ] CI/CD with GitHub Actions
+- [ ] Unit & integration tests
+- [ ] Pre-commit hooks for formatting and linting
+- [ ] Infrastructure as Code (Terraform / Pulumi)
+- [ ] Deployment to AWS/GCP via LocalStack or cloud-native services
 
+---
+
+## 📜 License
+
+MIT License. See `LICENSE` file.
